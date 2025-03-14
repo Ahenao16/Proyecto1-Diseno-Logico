@@ -7,19 +7,21 @@ class Interfaz:
         self.Ventana.title("Código Hamming")
         self.Ventana.geometry("800x800")
         self.Ventana.resizable(False, False)
-        self.numero_final = ""
+        self.numero_final = "" 
 
         self.frame = tk.Frame(self.Ventana)  
         self.frame.place(relx=0.5, rely=0.5, anchor="center")
 
-        self.entry_numero = tk.Entry(self.frame, font=("Arial", 14))
+        self.label_instrucciones = tk.Label(self.frame, text="Ingrese el número en hexadecimal y presione el botón. Este debe estar formado por 3 caracteres válidos (En el caso de ser un número de dos o un dígito complete el faltante con ceros). Los caracteres numéricos deben ser colocados en minúscula", font=("Arial", 12), fg="Black", anchor = "center",  wraplength=700)
+        self.label_instrucciones.pack(pady=10)
+
+        self.entry_numero = tk.Entry(self.frame, font=("Arial", 12))
         self.entry_numero.pack(pady=10)
 
-      
         self.Boton_conversion = tk.Button(self.frame, text="Presionar", command=self.Comprobacion_numero)
         self.Boton_conversion.pack()
 
-        self.label_error = tk.Label(self.frame, text="", font=("Arial", 16), fg="red")
+        self.label_error = tk.Label(self.frame, text="", font=("Arial", 12), fg="red")
         self.label_error.pack(pady=10)
 
     def Comprobacion_numero(self):

@@ -19,6 +19,8 @@ class Interfaz:
         self.cantidad_BitsParidad = 0
         self.matriz_paridad = []
         self.numero_con_paridad = ""
+        self.numero_con_error =""
+        self.bit_error = ""
 
         self.frame = tk.Frame(self.Ventana)  
         self.frame.place(relx=0.5, rely=0.5, anchor="center")
@@ -84,6 +86,8 @@ class Interfaz:
         self.Paridad_par(self.numero_con_paridad)
         self.Mostrar_bits_paridad()
         print(self.numero_con_paridad)
+        self.Revisar_error_par("00000101001000101")
+        print(self.bit_error)
 
     def Obtener_numero(self):
         self.numero_final = self.entry_numero.get()
@@ -165,7 +169,7 @@ class Interfaz:
         return matriz_transpuesta
 
     def Posiciones_paridad(self, matriz):
-        n = 5  
+        n = self.cantidad_BitsParidad  
         for fila in matriz:
             posiciones = [] 
             index = 0  
@@ -203,10 +207,41 @@ class Interfaz:
                 paridad = 0
 
             lista_binario[posicion_paridad] = str(paridad)
-            
             setattr(self, f"p{n}", paridad)  
-            
         self.numero_con_paridad = ''.join(lista_binario)
+
+
+    #Arreglar checkeo de paridad
+    def Revisar_error_par(self, numero_binario):
+        lista_binario = list(numero_binario)
+        bit_error_posicion = 0  
+        error_posicion_binario = []  
+
+        for n in range(1, self.cantidad_BitsParidad + 1):
+            posicion_paridad = 2**(n-1) - 1  
+            posiciones_paridad = getattr(self, f"Posiciones_p{n}")  
+            contador_unos = 0  
+
+            for pos in posiciones_paridad:
+                if pos < len(lista_binario) and lista_binario[pos] == "1":
+                    contador_unos += 1  
+
+            if contador_unos % 2 == 0:
+                paridad = 1
+            else:
+                paridad = 0
+
+            
+            if posicion_paridad < len(lista_binario) and int(lista_binario[posicion_paridad]) != paridad:
+                error_posicion_binario.append('1') 
+            else:
+                error_posicion_binario.append('0')  
+
+        bit_error_posicion = ''.join(error_posicion_binario)  
+
+        
+        self.bit_error = bit_error_posicion  
+        return self.bit_error
 
 
     def Crear_numero_paridad(self, numero_binario):

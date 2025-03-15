@@ -16,6 +16,9 @@ class Interfaz:
         self.numero_binario = ""
         self.numero_octal = ""
         self.numero_decimal = ""
+        self.cantidad_BitsParidad = 0
+        self.matriz_paridad = []
+        self.numero_con_paridad = ""
 
         self.frame = tk.Frame(self.Ventana)  
         self.frame.place(relx=0.5, rely=0.5, anchor="center")
@@ -49,6 +52,7 @@ class Interfaz:
 
         self.formato_tabla_numeros.configure("Treeview.Heading", 
                              font=("Arial", 12, "bold"))
+        
     
         self.frame_NRZI = tk.Frame(self.frame)
         self.frame_NRZI.pack(pady=20)
@@ -69,6 +73,17 @@ class Interfaz:
         self.Obtener_numero()
         self.Conversor(self.numero_final)
         self.NRZI(self.numero_binario)
+        self.Calculo_bits_paridad(self.numero_binario)
+        self.crear_matriz_binaria(self.cantidad_BitsParidad)
+        self.Posiciones_paridad(self.matriz_paridad)
+        self.Mostrar_posiciones()
+        self.Crear_numero_paridad(self.numero_binario)
+        print(self.matriz_paridad)
+        print(self.numero_con_paridad)
+        print(len(self.numero_con_paridad))
+        self.Paridad_par(self.numero_con_paridad)
+        self.Mostrar_bits_paridad()
+        print(self.numero_con_paridad)
 
     def Obtener_numero(self):
         self.numero_final = self.entry_numero.get()
@@ -117,6 +132,98 @@ class Interfaz:
         canvas = FigureCanvasTkAgg(fig, master=self.frame_NRZI)
         canvas.draw()
         canvas.get_tk_widget().pack()
+
+    def Calculo_bits_paridad(self, cadena_bits):
+            p=0
+            while 2**p < (p + len(cadena_bits)+1):
+                p= p+1
+            self.cantidad_BitsParidad = p
+            
+    def crear_matriz_binaria(self,bits_paridad):
+            matriz = []
+            for i in range(2**bits_paridad):  
+                fila = [] 
+                num = i
+                for j in range(bits_paridad): 
+                    fila.insert(0, num % 2)  #Obtengo el bit menos significativo (residuo al dividir la representacion decimal entre 2)
+                    num //= 2  #Division entera para obtener el sigiente numero que hay que dicidir
+                matriz.append(fila)  
+            
+            self.matriz_paridad = self.Transponer(matriz)
+
+    def Transponer(self, matriz):
+        filas = len(matriz)
+        columnas = len(matriz[0])
+        matriz_transpuesta = []
+
+        for i in range(columnas):  
+            sublista = []
+            for j in range(filas):  
+                sublista.append(matriz[j][i])  
+            matriz_transpuesta.append(sublista)
+
+        return matriz_transpuesta
+
+    def Posiciones_paridad(self, matriz):
+        n = 5  
+        for fila in matriz:
+            posiciones = [] 
+            index = 0  
+            for valor in fila:
+                if valor == 1 and index<= len(self.numero_binario) + self.cantidad_BitsParidad:  
+                    posiciones.append(index-1)  
+                index = index + 1  
+            posiciones= posiciones[1:]
+            
+            setattr(self, f"Posiciones_p{n}", posiciones) 
+            n = n - 1  
+        return
+
+    def Mostrar_posiciones(self):
+        print("P5:", self.Posiciones_p5)
+        print("P4:", self.Posiciones_p4)
+        print("P3:", self.Posiciones_p3)
+        print("P2:", self.Posiciones_p2)
+        print("P1:", self.Posiciones_p1)
+    
+    def Paridad_par(self, numero_binario):
+        lista_binario = list(numero_binario)
+        for n in range(1, self.cantidad_BitsParidad + 1):
+            posicion_paridad = 2**(n-1) - 1  
+
+            posiciones_paridad = getattr(self, f"Posiciones_p{n}")  
+            contador_unos = 0
+            
+            for pos in posiciones_paridad:
+                if pos < len(lista_binario) and lista_binario[pos] == "1":
+                    contador_unos += 1
+            if contador_unos % 2 == 0:
+                paridad = 1
+            else:
+                paridad = 0
+
+            lista_binario[posicion_paridad] = str(paridad)
+            
+            setattr(self, f"p{n}", paridad)  
+            
+        self.numero_con_paridad = ''.join(lista_binario)
+
+
+    def Crear_numero_paridad(self, numero_binario):
+        lista_binario = list(numero_binario)
+        for i in range(self.cantidad_BitsParidad):
+            posicion_paridad = 2**i - 1  
+            lista_binario.insert(posicion_paridad, 'p')
+        self.numero_con_paridad = ''.join(lista_binario)
+
+
+            
+    def Mostrar_bits_paridad(self):
+        print("P5:", self.p5)
+        print("P4:", self.p4)
+        print("P3:", self.p3)
+        print("P2:", self.p2)
+        print("P1:", self.p1)
 
 if __name__ == "__main__":
     root = tk.Tk()

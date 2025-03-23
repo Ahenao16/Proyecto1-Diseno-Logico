@@ -9,7 +9,7 @@ class Interfaz:
         self.Diccionario_valido = ("0","1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f")
         self.Ventana = Ventana
         self.Ventana.title("Código Hamming")
-        self.Ventana.geometry("800x800")
+        self.Ventana.geometry("1200x800")
         self.Ventana.resizable(False, False)
         self.Ventana.configure(bg="#E9E0D6")
         self.numero_final = "" 
@@ -72,10 +72,71 @@ class Interfaz:
         self.label_eleccion_paridad.pack(pady=5, padx=50)
 
         self.boton_paridad_par= tk.Button(self.frame, text="", font=("Arial", 12), bg="#E9E0D6",bd=0, highlightthickness=0,command=lambda:self.Llamada_paridad_par())
-        self.boton_paridad_par.pack(side="left", padx=185,pady=5)
+        self.boton_paridad_par.pack(pady=5)
 
         self.boton_paridad_impar= tk.Button(self.frame, text="", font=("Arial", 12), bg="#E9E0D6",bd=0, highlightthickness=0,command=lambda:self.Llamada_paridad_impar())
-        self.boton_paridad_impar.pack(side="left")
+        self.boton_paridad_impar.pack(pady=5)
+
+
+    def crear_tabla_paridad(self, parent, columnas,filas):
+            tree = ttk.Treeview(parent, show="headings")
+
+            # Crear la lista de columnas vacía
+            columnas_lista = [""]  # Comienza con el primer índice vacío
+            contador_bit_datos = 1
+            contador_bit_paridad = 1
+            fila_datos = ["Datos (sin paridad)"]
+
+            # Agregar las columnas p1, p2, ..., pn al final de la lista
+            for i in range(1, columnas + 1):
+                if (2**(i - 1)) % i == 0:
+                    columnas_lista.append(f"p{contador_bit_paridad}")
+                    contador_bit_paridad = contador_bit_paridad + 1
+                else:
+                    columnas_lista.append(f"d{contador_bit_datos}")
+                    contador_bit_datos = contador_bit_datos + 1
+
+            tree["columns"] = columnas_lista
+
+           
+            for col in columnas_lista:
+                tree.heading(col, text=col)  # Establecer los encabezados de columna
+                if col == "":  # Si es la primera columna
+                    tree.column(col, width=150, anchor="center")  # Mayor ancho para la primera columna
+                else:
+                    tree.column(col, width=30, anchor="center")  # Ancho para las demás columnas 
+
+            for i in range(1, columnas + 1):
+                if (2**(i - 1)) % i == 0:
+                    fila_datos.append("")  
+                else:
+                  
+                    bit_posicion = self.numero_con_paridad[i - 1]
+                    fila_datos.append(bit_posicion)
+            tree.insert("", "end", values=fila_datos)
+
+            for i in range(1, self.cantidad_BitsParidad+1):
+                posiciones_paridad = getattr(self, f"Posiciones_p{i}")
+                fila_paridad = [f"p{i}"]
+                tree.insert("", "end", values=fila_paridad)
+
+            tree.pack(expand=True, fill="both")
+        
+         
+            tree.pack(expand=True, fill="both")
+            return tree
+
+
+
+
+    def Llamada_paridad_par(self):
+        self.Paridad_par(self.numero_con_paridad)
+        self.Mostrar_bits_paridad()
+        print(self.numero_con_paridad)
+        self.Revisar_error_par("00010101001010101")
+        print(self.bit_error)
+        self.crear_tabla_paridad(self.frame, columnas=len(self.numero_con_paridad), filas=1)
+
 
     def on_frame_configure(self, event=None):
         self.canvas.config(scrollregion=self.canvas.bbox("all"))
@@ -104,13 +165,8 @@ class Interfaz:
         print(self.matriz_paridad)
         print(self.numero_con_paridad)
         print(len(self.numero_con_paridad))
-
-    def Llamada_paridad_par(self):
-        self.Paridad_par(self.numero_con_paridad)
-        self.Mostrar_bits_paridad()
-        print(self.numero_con_paridad)
-        self.Revisar_error_par("00010101001010101")
-        print(self.bit_error)
+        
+    
 
     def Llamada_paridad_impar(self):
         self.Paridad_impar(self.numero_con_paridad)
@@ -304,8 +360,6 @@ class Interfaz:
             posicion_paridad = 2**i - 1  
             lista_binario.insert(posicion_paridad, 'p')
         self.numero_con_paridad = ''.join(lista_binario)
-
-
             
     def Mostrar_bits_paridad(self):
         print("P5:", self.p5)

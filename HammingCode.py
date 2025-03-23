@@ -78,53 +78,62 @@ class Interfaz:
         self.boton_paridad_impar.pack(pady=5)
 
 
-    def crear_tabla_paridad(self, parent, columnas,filas):
-            tree = ttk.Treeview(parent, show="headings")
+    def crear_tabla_paridad(self, parent, columnas, filas):
+        tree = ttk.Treeview(parent, show="headings")
+        columnas_lista = [""]  
+        contador_bit_datos = 1
+        contador_bit_paridad = 1
+        fila_datos = ["Datos (sin paridad)"]
 
-            # Crear la lista de columnas vacía
-            columnas_lista = [""]  # Comienza con el primer índice vacío
-            contador_bit_datos = 1
-            contador_bit_paridad = 1
-            fila_datos = ["Datos (sin paridad)"]
+       
+        for i in range(1, columnas + 1):
+            if (2**(i - 1)) % i == 0:
+                columnas_lista.append(f"p{contador_bit_paridad}")
+                contador_bit_paridad = contador_bit_paridad + 1
+            else:
+                columnas_lista.append(f"d{contador_bit_datos}")
+                contador_bit_datos = contador_bit_datos + 1
+        contador_bit_datos = 1
+        contador_bit_paridad = 1
 
-            # Agregar las columnas p1, p2, ..., pn al final de la lista
-            for i in range(1, columnas + 1):
-                if (2**(i - 1)) % i == 0:
-                    columnas_lista.append(f"p{contador_bit_paridad}")
+        tree["columns"] = columnas_lista
+
+       
+        for col in columnas_lista:
+            tree.heading(col, text=col)  
+            if col == "":  
+                tree.column(col, width=150, anchor="center")  
+            else:
+                tree.column(col, width=30, anchor="center")  
+
+        
+        for i in range(1, columnas + 1):
+            if (2**(i - 1)) % i == 0:  
+                fila_datos.append("")  
+            else:
+                bit_posicion = self.numero_con_paridad[i - 1]
+                fila_datos.append(bit_posicion) 
+
+        tree.insert("", "end", values=fila_datos)
+
+        for i in range(1, self.cantidad_BitsParidad + 1):
+            posiciones_paridad = getattr(self, f"Posiciones_p{i}") 
+            bit_paridad = getattr(self, f"p{i}") 
+            fila_paridad = [f"p{i}"]  
+            for col in range(1, columnas + 1):
+                if col - 1 in posiciones_paridad:
+                    fila_paridad.append(self.numero_con_paridad[col - 1])
+                elif (2**(col - 1)) % col == 0 and contador_bit_paridad == i:
+                    fila_paridad.append(str(bit_paridad)) 
                     contador_bit_paridad = contador_bit_paridad + 1
                 else:
-                    columnas_lista.append(f"d{contador_bit_datos}")
-                    contador_bit_datos = contador_bit_datos + 1
+                    fila_paridad.append("")
 
-            tree["columns"] = columnas_lista
+            tree.insert("", "end", values=fila_paridad)
 
-           
-            for col in columnas_lista:
-                tree.heading(col, text=col)  # Establecer los encabezados de columna
-                if col == "":  # Si es la primera columna
-                    tree.column(col, width=150, anchor="center")  # Mayor ancho para la primera columna
-                else:
-                    tree.column(col, width=30, anchor="center")  # Ancho para las demás columnas 
+        tree.pack(expand=True, fill="both")
+        return tree
 
-            for i in range(1, columnas + 1):
-                if (2**(i - 1)) % i == 0:
-                    fila_datos.append("")  
-                else:
-                  
-                    bit_posicion = self.numero_con_paridad[i - 1]
-                    fila_datos.append(bit_posicion)
-            tree.insert("", "end", values=fila_datos)
-
-            for i in range(1, self.cantidad_BitsParidad+1):
-                posiciones_paridad = getattr(self, f"Posiciones_p{i}")
-                fila_paridad = [f"p{i}"]
-                tree.insert("", "end", values=fila_paridad)
-
-            tree.pack(expand=True, fill="both")
-        
-         
-            tree.pack(expand=True, fill="both")
-            return tree
 
 
 

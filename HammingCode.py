@@ -1,12 +1,11 @@
 import tkinter as tk
 from tkinter import ttk
 import matplotlib.pyplot as plt
-import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-
 class Interfaz:
     def __init__(self, Ventana):
         self.Diccionario_valido = ("0","1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f")
+        self.Diccionario_valido_error = ("0","1", "2", "3", "4", "5", "6", "7", "8", "9")
         self.Ventana = Ventana
         self.Ventana.title("Código Hamming")
         self.Ventana.geometry("1200x800")
@@ -46,7 +45,7 @@ class Interfaz:
         self.entry_numero = tk.Entry(self.frame, font=("Arial", 12))
         self.entry_numero.pack(pady=10, padx=50)
 
-        self.Boton_conversion = tk.Button(self.frame, text="Presionar", command=self.Comprobacion_numero ,highlightthickness=2,bd=2, bg="white")
+        self.Boton_conversion = tk.Button(self.frame, text="Confirmar", command=self.Comprobacion_numero ,highlightthickness=2,bd=2, bg="white")
         self.Boton_conversion.pack(pady=10, padx=50)
 
         self.label_error = tk.Label(self.frame, text="", font=("Arial", 12), fg="#F25757", bg="#E9E0D6")
@@ -56,10 +55,12 @@ class Interfaz:
         self.tabla_numeros.heading('Binario', text='Binario (12 bits)')
         self.tabla_numeros.heading('Octal', text='Octal')
         self.tabla_numeros.heading('Decimal', text='Decimal')
-        self.tabla_numeros.column('Binario', width=200, anchor='center')
+        self.tabla_numeros.column('Binario', anchor='center', width=200)
         self.tabla_numeros.column('Octal', width=200, anchor='center')
         self.tabla_numeros.column('Decimal', width=200, anchor='center')
         self.tabla_numeros.pack(pady=10, padx=50)
+        self.tabla_numeros.bind('<Button-1>', lambda event: self.handler(event, self.tabla_numeros))
+        self.tabla_numeros.bind('<Motion>', lambda event: self.handler(event, self.tabla_numeros))
 
         self.formato_tabla_numeros = ttk.Style()
         self.formato_tabla_numeros.configure("Treeview", font=("Arial", 12), background="#dcdcdc", rowheight=25)
@@ -77,14 +78,16 @@ class Interfaz:
         self.boton_paridad_impar= tk.Button(self.frame, text="", font=("Arial", 12), bg="#E9E0D6",bd=0, highlightthickness=0,command=lambda:self.Llamada_paridad_impar())
         self.boton_paridad_impar.pack(pady=5)
 
+    def handler(self, event,treeview):
+            if treeview.identify_region(event.x, event.y) == "separator":
+                return "break"
 
     def crear_tabla_paridad(self, parent, columnas):
-        
         for widget in self.frame.winfo_children():
-            if isinstance(widget, ttk.Treeview):
+            if isinstance(widget, ttk.Treeview) and widget != self.tabla_numeros:
                 widget.destroy()
 
-        tree = ttk.Treeview(parent, show="headings")
+        tree = ttk.Treeview(parent, show="headings",height=int(self.cantidad_BitsParidad)+2)
         columnas_lista = [""]
         contador_bit_datos = 1
         contador_bit_paridad = 1
@@ -146,8 +149,54 @@ class Interfaz:
         tree.insert("", "end", values=fila_datos_cp)
 
         
-        tree.pack(expand=False, fill="none")
+        tree.pack()
+        tree.bind('<Button-1>', lambda event: self.handler(event, tree))
+        tree.bind('<Motion>', lambda event: self.handler(event, tree))
+        self.Crear_interfaz_error()
         return tree
+    
+
+    def Crear_interfaz_error(self):
+        if hasattr(self, 'label_numero_error') and hasattr(self, 'entry_posicion_error') and hasattr(self, 'boton_error'):
+            self.label_numero_error.destroy()
+            self.entry_posicion_error.destroy()
+            self.boton_error.destroy()
+        
+        cantidad_bits_total=len(self.numero_con_paridad)
+        self.label_numero_error = tk.Label(self.frame, text="Escriba una posición en el bit de datos a modificar de 1 a" + str(cantidad_bits_total) , font=("Arial", 12), bg="#E9E0D6")
+        self.label_numero_error.pack(pady=5, padx=50)
+
+        self.entry_posicion_error = tk.Entry(self.frame, font=("Arial", 12))
+        self.entry_posicion_error.pack(pady=10, padx=50)
+
+        self.boton_error = tk.Button(self.frame, text="Confirmar", command=lambda:self.Obtener_numero_error() ,highlightthickness=2,bd=2, bg="white")
+        self.boton_error.pack(pady=5,padx=50)
+
+    def Obtener_numero_error(self):
+        if hasattr(self, 'label_mostrar_error'):
+            self.label_mostrar_error.destroy()
+
+        self.numero_con_error=""
+        posicion = self.entry_posicion_error.get()
+        self.label_mostrar_error = tk.Label(self.frame, text="" + self.numero_con_error, font=("Arial", 12), bg="#E9E0D6")
+        self.label_mostrar_error.pack(pady=5, padx=50)
+
+        if not posicion.isdigit() or int(posicion) <= 0 or int(posicion) > len(self.numero_con_paridad):
+            self.label_mostrar_error.config(text="Posición no válida, Intente de nuevo", fg="#F25757")
+            return
+
+        posicion_python = int(posicion) - 1  
+        lista_numero = list(self.numero_con_paridad)
+
+        if lista_numero[posicion_python] == '1':
+            lista_numero[posicion_python] = '0'
+        elif lista_numero[posicion_python] == '0':
+            lista_numero[posicion_python] = '1'
+        self.numero_con_error = ''.join(lista_numero)
+
+        self.label_mostrar_error.config(text="Número con error: " + self.numero_con_error, fg="#4EA699")
+                
+   
 
     def Llamada_paridad_par(self):
         self.Paridad_par(self.numero_con_paridad)
@@ -188,15 +237,9 @@ class Interfaz:
         self.Posiciones_paridad(self.matriz_paridad)
         self.Mostrar_posiciones()
         self.Crear_numero_paridad(self.numero_binario)
-        print(self.matriz_paridad)
-        print(self.numero_con_paridad)
-        print(len(self.numero_con_paridad))
+
         
     
-
-    
-      
-
     def Obtener_numero(self):
         self.numero_final = self.entry_numero.get()
         self.label_error.config(text="Usted ingresó el número hexadecimal: " + self.numero_final, fg="#4EA699")
@@ -249,8 +292,6 @@ class Interfaz:
         self.boton_paridad_impar.config(text="Paridad Impar",highlightthickness=2,bd=2, bg="white")
      
        
-        
-
     def Calculo_bits_paridad(self, cadena_bits):
             p=0
             while 2**p < (p + len(cadena_bits)+1):

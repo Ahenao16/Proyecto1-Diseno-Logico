@@ -19,6 +19,7 @@ class Interfaz:
         self.matriz_paridad = []
         self.numero_con_paridad = ""
         self.numero_con_error ="" 
+        self.numero_con_error_paridad = ""
         self.bit_error = ""
         self.estado_paridad = ""
 
@@ -164,6 +165,9 @@ class Interfaz:
         except AttributeError:
                 pass
         
+        print("el numero con error es" +  str(self.numero_con_error))
+        
+        self.Mostrar_posiciones()
         if self.estado_paridad == "par":
             self.Paridad_par_error(self.numero_con_error)
             self.Mostrar_bits_paridad()
@@ -172,6 +176,7 @@ class Interfaz:
             self.Mostrar_bits_paridad()
         print(self.numero_con_error)
         numero_error=self.numero_con_error
+        self.Mostrar_posiciones()
         
         for widget in self.frame.winfo_children():
             if isinstance(widget, ttk.Treeview) and widget != self.tabla_numeros and widget != self.tabla_paridad:
@@ -268,19 +273,38 @@ class Interfaz:
             return
 
         posicion_python = int(posicion) - 1  
-        lista_numero = list(self.numero_binario)
+        lista_numero_mostrable = list(self.numero_binario)
 
-        if lista_numero[posicion_python] == '1':
-            lista_numero[posicion_python] = '0'
-        elif lista_numero[posicion_python] == '0':
-            lista_numero[posicion_python] = '1'
-        self.numero_con_error = ''.join(lista_numero)
-
+        if lista_numero_mostrable[posicion_python] == '1':
+            lista_numero_mostrable[posicion_python] = '0'
+        elif lista_numero_mostrable[posicion_python] == '0':
+            lista_numero_mostrable[posicion_python] = '1'
+        self.numero_con_error = ''.join(lista_numero_mostrable)
         self.label_mostrar_error.config(text="Número con error: " + self.numero_con_error, fg="#4EA699")
-        self.Crear_numero_error(self.numero_con_error)
-        self.crear_tabla_error(self.frame, columnas=len(self.numero_con_error))        
-   
+        
+        print("El numero con error es:" +str(self.numero_con_error))
 
+        self.Crear_numero_error(self.numero_con_error)
+        print("El numero con error y ps es:" +str(self.numero_con_error))
+
+        lista_numero_con_error = list(self.numero_con_error)
+        paridad_index = 1  
+
+        for i in range(len(lista_numero_con_error)):
+                if lista_numero_con_error[i] == 'p':
+                    bit_paridad_attr = f"p{paridad_index}"  
+                    if hasattr(self, bit_paridad_attr):
+                        lista_numero_con_error[i] = str(getattr(self, bit_paridad_attr))
+                        paridad_index += 1  
+
+        self.numero_con_error = ''.join(lista_numero_con_error)
+        print("El numero con el cambio es:" +self.numero_con_error)
+
+        self.crear_tabla_error(self.frame, columnas=len(self.numero_con_error))
+     
+
+       
+        
     def Llamada_paridad_par(self):
         self.Paridad_par(self.numero_con_paridad)
         self.Mostrar_bits_paridad()
@@ -414,7 +438,7 @@ class Interfaz:
                 if valor == 1 and index<= len(self.numero_binario) + self.cantidad_BitsParidad:  
                     posiciones.append(index-1)  
                 index = index + 1  
-            posiciones= posiciones[1:]
+            posiciones
             
             setattr(self, f"Posiciones_p{n}", posiciones) 
             n = n - 1  

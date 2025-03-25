@@ -18,8 +18,11 @@ class Interfaz:
         self.cantidad_BitsParidad = 0
         self.matriz_paridad = []
         self.numero_con_paridad = ""
+        self.placeholder_numero_con_paridad = ""
         self.numero_con_error ="" 
+        self.numero_con_error_paridad = ""
         self.bit_error = ""
+        self.estado_paridad = ""
 
   
         self.canvas = tk.Canvas(self.Ventana, bg="#E9E0D6")
@@ -150,11 +153,91 @@ class Interfaz:
 
         
         tree.pack()
+        self.tabla_paridad = tree
         tree.bind('<Button-1>', lambda event: self.handler(event, tree))
         tree.bind('<Motion>', lambda event: self.handler(event, tree))
         self.Crear_interfaz_error()
         return tree
     
+    def crear_tabla_error(self, parent, columnas): 
+        print("el numero con error es" +  str(self.numero_con_error))
+        
+        self.Mostrar_posiciones()
+        if self.estado_paridad == "par":
+            self.Paridad_par_error(self.numero_con_error)
+            self.Mostrar_bits_paridad()
+        else:
+            self.Paridad_impar_error(self.numero_con_error)
+            self.Mostrar_bits_paridad()
+        print(self.numero_con_error)
+        numero_error=self.numero_con_error
+        self.Mostrar_posiciones()
+        
+        for widget in self.frame.winfo_children():
+            if isinstance(widget, ttk.Treeview) and widget != self.tabla_numeros and widget != self.tabla_paridad:
+                widget.destroy()
+
+        tabla_error = ttk.Treeview(parent, show="headings",height=int(self.cantidad_BitsParidad)+1)
+        columnas_lista = [""]
+        contador_bit_datos = 1
+        contador_bit_paridad = 1
+        fila_datos_sp = ["Datos (sin paridad)"]
+
+        for i in range(1, columnas + 1):
+            if (2**(i - 1)) % i == 0:
+                columnas_lista.append(f"p{contador_bit_paridad}")
+                contador_bit_paridad += 1
+            else:
+                columnas_lista.append(f"d{contador_bit_datos}")
+                contador_bit_datos += 1
+        contador_bit_datos = 1
+        contador_bit_paridad = 1
+        tabla_error["columns"] = columnas_lista
+
+      
+        for col in columnas_lista:
+            tabla_error.heading(col, text=col)
+            if col == "":
+                tabla_error.column(col, width=150, anchor="center")
+            else:
+                tabla_error.column(col, width=40, anchor="center")
+
+        
+        style = ttk.Style()
+        style.configure("Treeview", rowheight=25)  
+        
+       
+        for i in range(1, columnas + 1):
+            if (2**(i - 1)) % i == 0:
+                fila_datos_sp.append("")  
+            else:
+                bit_posicion = numero_error[i - 1]
+                fila_datos_sp.append(bit_posicion)
+
+        tabla_error.insert("", "end", values=fila_datos_sp)
+
+        
+        for i in range(1, self.cantidad_BitsParidad + 1):
+            posiciones_paridad = getattr(self, f"Posiciones_p{i}")
+            bit_paridad = getattr(self, f"p{i}")
+            fila_paridad = [f"p{i}"]
+
+            for col in range(1, columnas + 1):
+                if col - 1 in posiciones_paridad:
+                    fila_paridad.append(numero_error[col - 1])
+                elif (2**(i - 1)) == col:
+                    fila_paridad.append(str(bit_paridad))
+                else:
+                    fila_paridad.append("")
+
+            tabla_error.insert("", "end", values=fila_paridad)
+
+        
+        tabla_error.pack()
+        self.tabla_error = tabla_error
+        tabla_error.bind('<Button-1>', lambda event: self.handler(event, tabla_error))
+        tabla_error.bind('<Motion>', lambda event: self.handler(event, tabla_error))
+        return tabla_error
 
     def Crear_interfaz_error(self):
         if hasattr(self, 'label_numero_error') and hasattr(self, 'entry_posicion_error') and hasattr(self, 'boton_error'):
@@ -162,8 +245,7 @@ class Interfaz:
             self.entry_posicion_error.destroy()
             self.boton_error.destroy()
         
-        cantidad_bits_total=len(self.numero_con_paridad)
-        self.label_numero_error = tk.Label(self.frame, text="Escriba una posición en el bit de datos a modificar de 1 a" + str(cantidad_bits_total) , font=("Arial", 12), bg="#E9E0D6")
+        self.label_numero_error = tk.Label(self.frame, text="Escriba una posición en el bit de datos a modificar de 1 a " + str(len(self.numero_binario)) , font=("Arial", 12), bg="#E9E0D6")
         self.label_numero_error.pack(pady=5, padx=50)
 
         self.entry_posicion_error = tk.Entry(self.frame, font=("Arial", 12))
@@ -178,39 +260,53 @@ class Interfaz:
 
         self.numero_con_error=""
         posicion = self.entry_posicion_error.get()
-        self.label_mostrar_error = tk.Label(self.frame, text="" + self.numero_con_error, font=("Arial", 12), bg="#E9E0D6")
+        self.label_mostrar_error = tk.Label(self.frame, text="", font=("Arial", 12), bg="#E9E0D6")
         self.label_mostrar_error.pack(pady=5, padx=50)
 
-        if not posicion.isdigit() or int(posicion) <= 0 or int(posicion) > len(self.numero_con_paridad):
+        if not posicion.isdigit() or int(posicion) <= 0 or int(posicion) > len(self.numero_binario):
             self.label_mostrar_error.config(text="Posición no válida, Intente de nuevo", fg="#F25757")
             return
 
         posicion_python = int(posicion) - 1  
-        lista_numero = list(self.numero_con_paridad)
+        lista_numero_mostrable = list(self.numero_binario)
 
-        if lista_numero[posicion_python] == '1':
-            lista_numero[posicion_python] = '0'
-        elif lista_numero[posicion_python] == '0':
-            lista_numero[posicion_python] = '1'
-        self.numero_con_error = ''.join(lista_numero)
-
+        if lista_numero_mostrable[posicion_python] == '1':
+            lista_numero_mostrable[posicion_python] = '0'
+        elif lista_numero_mostrable[posicion_python] == '0':
+            lista_numero_mostrable[posicion_python] = '1'
+        self.numero_con_error = ''.join(lista_numero_mostrable)
         self.label_mostrar_error.config(text="Número con error: " + self.numero_con_error, fg="#4EA699")
-                
-   
+        
+        print("El numero con error es:" +str(self.numero_con_error))
+
+        self.Crear_numero_error(self.numero_con_error)
+        print("El numero con error y ps es:" +str(self.numero_con_error))
+
+        lista_numero_con_error = list(self.numero_con_error)
+        paridad_index = 1  
+
+        for i in range(len(lista_numero_con_error)):
+                if lista_numero_con_error[i] == 'p':
+                    bit_paridad_attr = f"p{paridad_index}"  
+                    if hasattr(self, bit_paridad_attr):
+                        lista_numero_con_error[i] = str(getattr(self, bit_paridad_attr))
+                        paridad_index += 1  
+
+        self.numero_con_error = ''.join(lista_numero_con_error)
+        print("El numero con el cambio es:" +self.numero_con_error)
+
+        self.crear_tabla_error(self.frame, columnas=len(self.numero_con_error))
+     
 
     def Llamada_paridad_par(self):
-        self.Paridad_par(self.numero_con_paridad)
+        self.Paridad_par(self.placeholder_numero_con_paridad)
         self.Mostrar_bits_paridad()
-        print(self.numero_con_paridad)
-        self.Revisar_error_par("00010101001010101")
-        print(self.bit_error)
-        self.crear_tabla_paridad(self.frame, columnas=len(self.numero_con_paridad))
+        self.crear_tabla_paridad(self.frame, columnas=len(self.placeholder_numero_con_paridad))
 
     def Llamada_paridad_impar(self):
-        self.Paridad_impar(self.numero_con_paridad)
+        self.Paridad_impar(self.placeholder_numero_con_paridad)
         self.Mostrar_bits_paridad()
-        print(self.numero_con_paridad)
-        self.crear_tabla_paridad(self.frame, columnas=len(self.numero_con_paridad))
+        self.crear_tabla_paridad(self.frame, columnas=len(self.placeholder_numero_con_paridad))
 
 
     def on_frame_configure(self, event=None):
@@ -332,7 +428,7 @@ class Interfaz:
                 if valor == 1 and index<= len(self.numero_binario) + self.cantidad_BitsParidad:  
                     posiciones.append(index-1)  
                 index = index + 1  
-            posiciones= posiciones[1:]
+            posiciones
             
             setattr(self, f"Posiciones_p{n}", posiciones) 
             n = n - 1  
@@ -346,6 +442,7 @@ class Interfaz:
         print("P1:", self.Posiciones_p1)
     
     def Paridad_par(self, numero_binario):
+        self.reset_paridad
         lista_binario = list(numero_binario)
         for n in range(1, self.cantidad_BitsParidad + 1):
             posicion_paridad = 2**(n-1) - 1  
@@ -364,9 +461,35 @@ class Interfaz:
             lista_binario[posicion_paridad] = str(paridad)
             setattr(self, f"p{n}", paridad)  
         self.numero_con_paridad = ''.join(lista_binario)
+        self.numero_con_error = ''.join(lista_binario)
+        self.estado_paridad = "par"
+
+    def Paridad_par_error(self, numero_binario):
+            self.reset_paridad
+            lista_binario = list(numero_binario)
+            for n in range(1, self.cantidad_BitsParidad + 1):
+                posicion_paridad = 2**(n-1) - 1  
+
+                posiciones_paridad = getattr(self, f"Posiciones_p{n}")  
+                contador_unos = 0
+                
+                for pos in posiciones_paridad:
+                    if pos < len(lista_binario) and lista_binario[pos] == "1":
+                        contador_unos += 1
+                if contador_unos % 2 == 0:
+                    paridad = 1
+                else:
+                    paridad = 0
+
+                lista_binario[posicion_paridad] = str(paridad)
+                setattr(self, f"p{n}", paridad)  
+            self.numero_con_paridad = ''.join(lista_binario)
+            self.numero_con_error = ''.join(lista_binario)
+            self.estado_paridad = "par"
 
 
     def Paridad_impar(self, numero_binario):
+        self.reset_paridad
         lista_binario = list(numero_binario)
         for n in range(1, self.cantidad_BitsParidad + 1):
             posicion_paridad = 2**(n-1) - 1  
@@ -385,37 +508,29 @@ class Interfaz:
             lista_binario[posicion_paridad] = str(paridad)
             setattr(self, f"p{n}", paridad)  
         self.numero_con_paridad = ''.join(lista_binario)
+        self.estado_paridad = "impar"
 
+    def Paridad_impar_error(self, numero_binario):
+            self.reset_paridad
+            lista_binario = list(numero_binario)
+            for n in range(1, self.cantidad_BitsParidad + 1):
+                posicion_paridad = 2**(n-1) - 1  
 
-    def Revisar_error_par(self, numero_binario):
-        lista_binario = list(numero_binario)
-        bit_error_posicion = 0  
-        error_posicion_binario = []  
+                posiciones_paridad = getattr(self, f"Posiciones_p{n}")  
+                contador_unos = 0
+                
+                for pos in posiciones_paridad:
+                    if pos < len(lista_binario) and lista_binario[pos] == "1":
+                        contador_unos += 1
+                if contador_unos % 2 == 0:
+                    paridad = 0
+                else:
+                    paridad = 1
 
-        for n in range(1, self.cantidad_BitsParidad + 1):
-            posicion_paridad = 2**(n-1) - 1  
-            posiciones_paridad = getattr(self, f"Posiciones_p{n}")  
-            contador_unos = 0  
-
-            for pos in posiciones_paridad:
-                if pos < len(lista_binario) and lista_binario[pos] == "1":
-                    contador_unos += 1  
-
-            if contador_unos % 2 == 0:
-                paridad = 1
-            else:
-                paridad = 0
-
-            if posicion_paridad < len(lista_binario) and int(lista_binario[posicion_paridad]) != paridad:
-                error_posicion_binario.append('1') 
-            else:
-                error_posicion_binario.append('0')  
-
-        bit_error_posicion = ''.join(error_posicion_binario)  
-
-        
-        self.bit_error = bit_error_posicion  
-        return self.bit_error
+                lista_binario[posicion_paridad] = str(paridad)
+                setattr(self, f"p{n}", paridad)  
+            self.numero_con_error = ''.join(lista_binario)
+            self.estado_paridad = "impar"
 
 
     def Crear_numero_paridad(self, numero_binario):
@@ -423,7 +538,21 @@ class Interfaz:
         for i in range(self.cantidad_BitsParidad):
             posicion_paridad = 2**i - 1  
             lista_binario.insert(posicion_paridad, 'p')
-        self.numero_con_paridad = ''.join(lista_binario)
+        self.placeholder_numero_con_paridad = ''.join(lista_binario)
+
+    def Crear_numero_error(self, numero_binario):
+        lista_binario = list(numero_binario)
+        for i in range(self.cantidad_BitsParidad):
+            posicion_paridad = 2**i - 1  
+            lista_binario.insert(posicion_paridad, 'p')
+        self.numero_con_error = ''.join(lista_binario)
+
+    def reset_paridad(self):
+        try:
+            for i in range(1, self.cantidad_BitsParidad + 1):
+                delattr(self, f"p{i}")  
+        except AttributeError:
+                pass
             
     def Mostrar_bits_paridad(self):
         print("P5:", self.p5)

@@ -24,8 +24,6 @@ class Interfaz: #Se crea una clase (basada en POO) para la interfaz del programa
         self.numero_con_paridad = "" #Se dejan libres los espacios para representar los números con paridad, error, el bit de error, etc. 
         self.placeholder_numero_con_paridad = ""
         self.numero_con_error ="" 
-        self.numero_con_error_paridad = ""
-        self.bit_error = ""
         self.estado_paridad = ""
 
   
@@ -52,8 +50,14 @@ class Interfaz: #Se crea una clase (basada en POO) para la interfaz del programa
         self.entry_numero = tk.Entry(self.frame, font=("Arial", 12)) #Inicializa el espacio para que el usuario ingrese el dato en hexadecimal
         self.entry_numero.pack(pady=10, padx=225)
 
+<<<<<<< HEAD
         self.Boton_conversion = tk.Button(self.frame, text="Confirmar", command=self.Comprobacion_numero ,highlightthickness=2,bd=2, bg="white")
         self.Boton_conversion.pack(pady=10, padx=225) #El botón Confirmar registra el número Hexadecimal del usuario 
+=======
+        self.Boton_conversion = tk.Button(self.frame, text="Convertir", command=self.Comprobacion_numero ,highlightthickness=2,bd=2, bg="white",font=("Arial", 12))
+        self.Boton_conversion.pack(pady=10, padx=225)
+        
+>>>>>>> 7a9613c757ecd5800417a192c2140f4568b2b768
 
         self.label_error = tk.Label(self.frame, text="", font=("Arial", 12), fg="#F25757", bg="#E9E0D6")
         self.label_error.pack(pady=10, padx=225) 
@@ -86,14 +90,29 @@ class Interfaz: #Se crea una clase (basada en POO) para la interfaz del programa
         self.boton_paridad_impar= tk.Button(self.frame, text="", font=("Arial", 12), bg="#E9E0D6",bd=0, highlightthickness=0,command=lambda:self.Llamada_paridad_impar())
         self.boton_paridad_impar.pack(pady=5) #Boton para la paridad impar 
 
+<<<<<<< HEAD
     def handler(self, event,treeview): #Crea un manejador para evitar que el usuario intente modificar las dimensiones de las tablas
+=======
+        self.canvas_tabla= tk.Canvas(self.frame,width=400, height=300)
+
+    def handler(self, event,treeview):
+>>>>>>> 7a9613c757ecd5800417a192c2140f4568b2b768
             if treeview.identify_region(event.x, event.y) == "separator":
                 return "break"
 
     def crear_tabla_paridad(self, parent, columnas): #Metodo para crear la tablar de paridad 
         for widget in self.frame.winfo_children():
+<<<<<<< HEAD
             if isinstance(widget, ttk.Treeview) and widget != self.tabla_numeros:
                 widget.destroy() #Elimina cualquier instancia de widget que sea un treeview pero que no sea parte de tabla_numeros 
+=======
+            try:
+                if isinstance(widget, ttk.Treeview) and widget != self.tabla_numeros and widget != self.tabla_error:
+                    widget.destroy()
+            except:
+                if isinstance(widget, ttk.Treeview) and widget != self.tabla_numeros:
+                    widget.destroy()
+>>>>>>> 7a9613c757ecd5800417a192c2140f4568b2b768
 
         tree = ttk.Treeview(parent, show="headings",height=int(self.cantidad_BitsParidad)+2) #Se hace la tabla (el arbol de treeview)
         columnas_lista = [""] #Con n cantidad de columnas
@@ -175,7 +194,11 @@ class Interfaz: #Se crea una clase (basada en POO) para la interfaz del programa
         else:
             self.Paridad_impar_error(self.numero_con_error)
             self.Mostrar_bits_paridad()
+<<<<<<< HEAD
         print(self.numero_con_error) #Se despliega el valor que presenta el error 
+=======
+        print("numero de testeo" + self.numero_con_error)
+>>>>>>> 7a9613c757ecd5800417a192c2140f4568b2b768
         numero_error = self.numero_con_error
         self.Mostrar_posiciones() 
         
@@ -187,7 +210,7 @@ class Interfaz: #Se crea una clase (basada en POO) para la interfaz del programa
         columnas_lista = [""]
         contador_bit_datos = 1
         contador_bit_paridad = 1
-        fila_datos_sp = ["Datos (sin paridad)"]
+        fila_datos_sp = ["Datos"]
 
         
         for i in range(1, columnas + 1): #Se llena de manera similar a la tabla original de números 
@@ -199,6 +222,7 @@ class Interfaz: #Se crea una clase (basada en POO) para la interfaz del programa
                 contador_bit_datos += 1
 
         
+<<<<<<< HEAD
         columnas_lista.append("Bit de paridad") #Se agrega una columna adicional para mostrar el valor del bit de paridad
         columnas_lista.append("Prueba de paridad") #Se muestra si la prueba de paridad para los bits de paridad resultado en un estado correcto o en error detectado
         tabla_error["columns"] = columnas_lista
@@ -206,6 +230,15 @@ class Interfaz: #Se crea una clase (basada en POO) para la interfaz del programa
         
         for col in columnas_lista: #Agrega los titulos a las nuevas columnas de la tabla de error 
             if col in ["Bit de paridad", "Prueba de paridad"]:
+=======
+        columnas_lista.append("Posición de error")
+        columnas_lista.append("Prueba de paridad")
+        tabla_error["columns"] = columnas_lista
+
+        
+        for col in columnas_lista:
+            if col in ["Posición de error", "Prueba de paridad", ""]:
+>>>>>>> 7a9613c757ecd5800417a192c2140f4568b2b768
                 tabla_error.column(col, width=150, anchor="center")  
             else:
                 tabla_error.column(col, width=40, anchor="center")  
@@ -254,31 +287,67 @@ class Interfaz: #Se crea una clase (basada en POO) para la interfaz del programa
         self.tabla_error = tabla_error
         tabla_error.bind('<Button-1>', lambda event: self.handler(event, tabla_error))
         tabla_error.bind('<Motion>', lambda event: self.handler(event, tabla_error))
+        self.label_reintentar = tk.Label(self.frame, text="Si desea ingresar otra posición a modificar presione el siguiente boton:", font=("Arial", 12), bg="#E9E0D6")
+        self.label_reintentar.pack(pady=5, padx=225)
+
+        self.boton_reintentar = tk.Button(self.frame, text="Colocar otro número", command=lambda:self.Reiniciar() ,highlightthickness=2,bd=2, bg="white", font=("Arial", 12))
+        self.boton_reintentar.pack(pady=5,padx=225)
         return tabla_error
 
+    def Reiniciar(self):
+        self.boton_error.config(state="active") 
+        self.boton_reintentar.destroy()
+        self.label_mostrar_error.destroy()
+        self.label_reintentar.destroy()
+        self.tabla_error.destroy()
+        self.reset_paridad()
+        self.entry_posicion_error.delete(0, tk.END)
+        print("Numero con error"+self.numero_con_error)
+        self.Paridad_par(self.placeholder_numero_con_paridad)
 
+<<<<<<< HEAD
     def Crear_interfaz_error(self): #Metodo para crear la interfaz que permite modificar un bit para simular un error 
+=======
+        
+       
+    def Crear_interfaz_error(self):
+>>>>>>> 7a9613c757ecd5800417a192c2140f4568b2b768
         if hasattr(self, 'label_numero_error') and hasattr(self, 'entry_posicion_error') and hasattr(self, 'boton_error'):
             self.label_numero_error.destroy()
             self.entry_posicion_error.destroy()
             self.boton_error.destroy()
         
+<<<<<<< HEAD
         self.label_numero_error = tk.Label(self.frame, text="Escriba una posición en el bit de datos a modificar de 1 a " + str(len(self.numero_binario)) , font=("Arial", 12), bg="#E9E0D6")
         self.label_numero_error.pack(pady=5, padx=225) #Etiqueta indica al usuario que debe seleccionar una posicion para alterar 
+=======
+        self.label_numero_error = tk.Label(self.frame, text="Escriba la posición en el bit de datos a modificar de 1 a " + str(len(self.numero_binario)) , font=("Arial", 12), bg="#E9E0D6")
+        self.label_numero_error.pack(pady=5, padx=225)
+>>>>>>> 7a9613c757ecd5800417a192c2140f4568b2b768
 
         self.entry_posicion_error = tk.Entry(self.frame, font=("Arial", 12))
         self.entry_posicion_error.pack(pady=10, padx=225) #Crea el espacio para indicar el bit de datos a cambiar 
 
+<<<<<<< HEAD
         self.boton_error = tk.Button(self.frame, text="Confirmar", command=lambda:self.Obtener_numero_error() ,highlightthickness=2,bd=2, bg="white")
         self.boton_error.pack(pady=5,padx=225) #Crea el botón de confirmación y extrae el dato del bit que el usuario deseea modificar 
+=======
+        self.boton_error = tk.Button(self.frame, text="Modificar", command=lambda:self.Obtener_numero_error() ,highlightthickness=2,bd=2, bg="white", font=("Arial", 12))
+        self.boton_error.pack(pady=5,padx=225)
+>>>>>>> 7a9613c757ecd5800417a192c2140f4568b2b768
 
     def Obtener_numero_error(self): #Metodo para obtener el número de posición donde se quiere el error 
         if hasattr(self, 'label_mostrar_error'):
             self.label_mostrar_error.destroy()
 
+<<<<<<< HEAD
         self.numero_con_error="" #Se inicializa vacio 
         
         posicion = self.entry_posicion_error.get() #Se obtiene su posicion
+=======
+        self.numero_con_error=""
+        posicion = self.entry_posicion_error.get()
+>>>>>>> 7a9613c757ecd5800417a192c2140f4568b2b768
         self.label_mostrar_error = tk.Label(self.frame, text="", font=("Arial", 12), bg="#E9E0D6")
         self.label_mostrar_error.pack(pady=5, padx=225) #Se muestra con una etiqueta en la ventana del programa
 
@@ -294,13 +363,17 @@ class Interfaz: #Se crea una clase (basada en POO) para la interfaz del programa
         elif lista_numero_mostrable[posicion_python] == '0':
             lista_numero_mostrable[posicion_python] = '1'
         self.numero_con_error = ''.join(lista_numero_mostrable)
-        self.label_mostrar_error.config(text="Número con error: " + self.numero_con_error, fg="#4EA699")
+        self.label_mostrar_error.config(text="El número original con error es: " + self.numero_con_error, fg="#4EA699")
         
+<<<<<<< HEAD
         print("El numero binario original con error es:" +str(self.numero_con_error)) #Imprime el numero binario con error en la terminal
 
         self.Crear_numero_error(self.numero_con_error) 
         print("El numero con error y ps es:" +str(self.numero_con_error))
 
+=======
+        self.Crear_numero_error(self.numero_con_error)
+>>>>>>> 7a9613c757ecd5800417a192c2140f4568b2b768
         lista_numero_con_error = list(self.numero_con_error)
         paridad_index = 1  
 
@@ -312,9 +385,15 @@ class Interfaz: #Se crea una clase (basada en POO) para la interfaz del programa
                         paridad_index += 1  
 
         self.numero_con_error = ''.join(lista_numero_con_error)
-        print("El numero con el cambio es:" +self.numero_con_error)
 
+<<<<<<< HEAD
         self.crear_tabla_error(self.frame, columnas=len(self.numero_con_error)) #Las columnas de la tabla de error son iguales a la longitud del numeor con error
+=======
+        self.boton_error.config(state="disabled")  
+
+        print("El numero de error a probar es" + self.numero_con_error )
+        self.crear_tabla_error(self.frame, columnas=len(self.numero_con_error))
+>>>>>>> 7a9613c757ecd5800417a192c2140f4568b2b768
      
 
     def Llamada_paridad_par(self): #Funciones de llamada para crear la tabla de paridad 

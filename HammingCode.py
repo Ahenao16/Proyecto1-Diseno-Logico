@@ -20,8 +20,6 @@ class Interfaz:
         self.numero_con_paridad = ""
         self.placeholder_numero_con_paridad = ""
         self.numero_con_error ="" 
-        self.numero_con_error_paridad = ""
-        self.bit_error = ""
         self.estado_paridad = ""
 
   
@@ -169,7 +167,7 @@ class Interfaz:
         else:
             self.Paridad_impar_error(self.numero_con_error)
             self.Mostrar_bits_paridad()
-        print(self.numero_con_error)
+        print("numero de testeo" + self.numero_con_error)
         numero_error = self.numero_con_error
         self.Mostrar_posiciones()
         
@@ -248,9 +246,26 @@ class Interfaz:
         self.tabla_error = tabla_error
         tabla_error.bind('<Button-1>', lambda event: self.handler(event, tabla_error))
         tabla_error.bind('<Motion>', lambda event: self.handler(event, tabla_error))
+        self.label_reintentar = tk.Label(self.frame, text="Si desea ingresar otra posición a modificar presione el siguiente boton:", font=("Arial", 12), bg="#E9E0D6")
+        self.label_reintentar.pack(pady=5, padx=225)
+
+        self.boton_reintentar = tk.Button(self.frame, text="Reiniciar", command=lambda:self.Reiniciar() ,highlightthickness=2,bd=2, bg="white")
+        self.boton_reintentar.pack(pady=5,padx=225)
         return tabla_error
 
+    def Reiniciar(self):
+        self.boton_error.config(state="active") 
+        self.boton_reintentar.destroy()
+        self.label_mostrar_error.destroy()
+        self.label_reintentar.destroy()
+        self.tabla_error.destroy()
+        self.reset_paridad()
+        self.entry_posicion_error.delete(0, tk.END)
+        print("Numero con error"+self.numero_con_error)
+        self.Paridad_par(self.placeholder_numero_con_paridad)
 
+        
+       
     def Crear_interfaz_error(self):
         if hasattr(self, 'label_numero_error') and hasattr(self, 'entry_posicion_error') and hasattr(self, 'boton_error'):
             self.label_numero_error.destroy()
@@ -271,7 +286,6 @@ class Interfaz:
             self.label_mostrar_error.destroy()
 
         self.numero_con_error=""
-        
         posicion = self.entry_posicion_error.get()
         self.label_mostrar_error = tk.Label(self.frame, text="", font=("Arial", 12), bg="#E9E0D6")
         self.label_mostrar_error.pack(pady=5, padx=225)
@@ -288,13 +302,9 @@ class Interfaz:
         elif lista_numero_mostrable[posicion_python] == '0':
             lista_numero_mostrable[posicion_python] = '1'
         self.numero_con_error = ''.join(lista_numero_mostrable)
-        self.label_mostrar_error.config(text="Número con error: " + self.numero_con_error, fg="#4EA699")
+        self.label_mostrar_error.config(text="El número original con error es: " + self.numero_con_error, fg="#4EA699")
         
-        print("El numero binario original con error es:" +str(self.numero_con_error))
-
         self.Crear_numero_error(self.numero_con_error)
-        print("El numero con error y ps es:" +str(self.numero_con_error))
-
         lista_numero_con_error = list(self.numero_con_error)
         paridad_index = 1  
 
@@ -306,8 +316,10 @@ class Interfaz:
                         paridad_index += 1  
 
         self.numero_con_error = ''.join(lista_numero_con_error)
-        print("El numero con el cambio es:" +self.numero_con_error)
 
+        self.boton_error.config(state="disabled")  
+
+        print("El numero de error a probar es" + self.numero_con_error )
         self.crear_tabla_error(self.frame, columnas=len(self.numero_con_error))
      
 

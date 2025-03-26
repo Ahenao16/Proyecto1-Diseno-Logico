@@ -186,7 +186,7 @@ class Interfaz:
         columnas_lista = [""]
         contador_bit_datos = 1
         contador_bit_paridad = 1
-        fila_datos_sp = ["Datos (sin paridad)"]
+        fila_datos_sp = ["Datos"]
 
         
         for i in range(1, columnas + 1):
@@ -198,13 +198,13 @@ class Interfaz:
                 contador_bit_datos += 1
 
         
-        columnas_lista.append("Bit de paridad")
+        columnas_lista.append("Posición de error")
         columnas_lista.append("Prueba de paridad")
         tabla_error["columns"] = columnas_lista
 
         
         for col in columnas_lista:
-            if col in ["Bit de paridad", "Prueba de paridad"]:
+            if col in ["Posición de error", "Prueba de paridad", ""]:
                 tabla_error.column(col, width=150, anchor="center")  
             else:
                 tabla_error.column(col, width=40, anchor="center")  

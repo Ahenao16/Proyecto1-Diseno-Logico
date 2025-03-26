@@ -46,8 +46,9 @@ class Interfaz:
         self.entry_numero = tk.Entry(self.frame, font=("Arial", 12))
         self.entry_numero.pack(pady=10, padx=225)
 
-        self.Boton_conversion = tk.Button(self.frame, text="Confirmar", command=self.Comprobacion_numero ,highlightthickness=2,bd=2, bg="white")
+        self.Boton_conversion = tk.Button(self.frame, text="Convertir", command=self.Comprobacion_numero ,highlightthickness=2,bd=2, bg="white",font=("Arial", 12))
         self.Boton_conversion.pack(pady=10, padx=225)
+        
 
         self.label_error = tk.Label(self.frame, text="", font=("Arial", 12), fg="#F25757", bg="#E9E0D6")
         self.label_error.pack(pady=10, padx=225)
@@ -79,14 +80,20 @@ class Interfaz:
         self.boton_paridad_impar= tk.Button(self.frame, text="", font=("Arial", 12), bg="#E9E0D6",bd=0, highlightthickness=0,command=lambda:self.Llamada_paridad_impar())
         self.boton_paridad_impar.pack(pady=5)
 
+        self.canvas_tabla= tk.Canvas(self.frame,width=400, height=300)
+
     def handler(self, event,treeview):
             if treeview.identify_region(event.x, event.y) == "separator":
                 return "break"
 
     def crear_tabla_paridad(self, parent, columnas):
         for widget in self.frame.winfo_children():
-            if isinstance(widget, ttk.Treeview) and widget != self.tabla_numeros:
-                widget.destroy()
+            try:
+                if isinstance(widget, ttk.Treeview) and widget != self.tabla_numeros and widget != self.tabla_error:
+                    widget.destroy()
+            except:
+                if isinstance(widget, ttk.Treeview) and widget != self.tabla_numeros:
+                    widget.destroy()
 
         tree = ttk.Treeview(parent, show="headings",height=int(self.cantidad_BitsParidad)+2)
         columnas_lista = [""]
@@ -249,7 +256,7 @@ class Interfaz:
         self.label_reintentar = tk.Label(self.frame, text="Si desea ingresar otra posición a modificar presione el siguiente boton:", font=("Arial", 12), bg="#E9E0D6")
         self.label_reintentar.pack(pady=5, padx=225)
 
-        self.boton_reintentar = tk.Button(self.frame, text="Reiniciar", command=lambda:self.Reiniciar() ,highlightthickness=2,bd=2, bg="white")
+        self.boton_reintentar = tk.Button(self.frame, text="Colocar otro número", command=lambda:self.Reiniciar() ,highlightthickness=2,bd=2, bg="white", font=("Arial", 12))
         self.boton_reintentar.pack(pady=5,padx=225)
         return tabla_error
 
@@ -272,13 +279,13 @@ class Interfaz:
             self.entry_posicion_error.destroy()
             self.boton_error.destroy()
         
-        self.label_numero_error = tk.Label(self.frame, text="Escriba una posición en el bit de datos a modificar de 1 a " + str(len(self.numero_binario)) , font=("Arial", 12), bg="#E9E0D6")
+        self.label_numero_error = tk.Label(self.frame, text="Escriba la posición en el bit de datos a modificar de 1 a " + str(len(self.numero_binario)) , font=("Arial", 12), bg="#E9E0D6")
         self.label_numero_error.pack(pady=5, padx=225)
 
         self.entry_posicion_error = tk.Entry(self.frame, font=("Arial", 12))
         self.entry_posicion_error.pack(pady=10, padx=225)
 
-        self.boton_error = tk.Button(self.frame, text="Confirmar", command=lambda:self.Obtener_numero_error() ,highlightthickness=2,bd=2, bg="white")
+        self.boton_error = tk.Button(self.frame, text="Modificar", command=lambda:self.Obtener_numero_error() ,highlightthickness=2,bd=2, bg="white", font=("Arial", 12))
         self.boton_error.pack(pady=5,padx=225)
 
     def Obtener_numero_error(self):
